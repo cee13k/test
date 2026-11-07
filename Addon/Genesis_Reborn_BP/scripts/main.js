@@ -913,7 +913,7 @@ Ranger forestry: ${v.woodlotEnabled?'ON':'OFF'}
  if(x===1){v.enabled=!v.enabled;event(v,'policy','Village specialists '+(v.enabled?'resumed':'paused'));persist();}
  if(x===2){v.guardEnabled=!v.guardEnabled;event(v,'policy','Sentinel alerts '+(v.guardEnabled?'enabled':'disabled'));persist();}
  if(x===3){let b;try{b=p.getBlockFromViewDirection({maxDistance:8})?.block;}catch(_){}if(!b||!['minecraft:dirt','minecraft:grass_block','minecraft:podzol','minecraft:coarse_dirt'].includes(b.typeId)||hd(b.location,v.bell)>35){announce(p,'Look at grass or dirt within 35 blocks of the bell.');return;}if(!await yes(p,'Designate Oak Woodlot','Rangers will plant oak saplings and cut oak logs connected to leaves inside a 5×5 area centered here. Never choose an area containing buildings.'))return;v.woodlot={...b.location};event(v,'forest','Woodlot registered');persist();}
- if(x===4){v.woodlotEnabled=!v.woodlotEnabled;event(v,'policy','Woodlot forestry '+(v.woodlotEnabled?'enabled':'disabled'));persist();}
+ if(x===4){if(!v.woodlot&&!v.woodlotEnabled){announce(p,'Register a safe oak woodlot before enabling forestry.');return;}v.woodlotEnabled=!v.woodlotEnabled;event(v,'policy','Woodlot forestry '+(v.woodlotEnabled?'enabled':'disabled'));persist();}
 }
 
 function councilReport(v){
