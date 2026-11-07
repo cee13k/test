@@ -124,7 +124,12 @@ export function cleanRoutes(v,workers,tick){
  // A trader's destination marker may be beside a DIFFERENT village bell.
  // Only delete markers owned by this village, never another settlement's routes.
  const owned=new Set(v.workerIds||[]);
- for(const id of Object.keys(v.navSlots||{}))if(!owned.has(id))delete v.navSlots[id];
+ for(const id of Object.keys(v.navSlots||{}))if(!owned.has(id)){
+  const slot=v.navSlots[id];
+  if(Number.isInteger(slot))leases.delete(leaseKey(v.dimension,slot));
+  const stale=routes.get(id);if(stale){try{stale.marker?.remove();}catch(_){}routes.delete(id);}
+  delete v.navSlots[id];
+ }
  try{
   const d=v.dimensionObject;
   for(const e of d.getEntities({type:'genesis:nav_marker',location:v.bell,maxDistance:46})){
