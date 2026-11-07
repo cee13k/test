@@ -339,7 +339,7 @@ function construction(v,w,box,adults){
   if(tile.states&&Object.keys(tile.states).length)b.setPermutation(BlockPermutation.resolve(tile.id,tile.states));else b.setType(tile.id);
   budget.spend(1);cargo.amount--;q.progress++;q.state='working';q.reason='';v.metrics.built++;status(w,'Building '+bp.title+' '+q.progress+'/'+tiles.length);
   if(cargo.amount<=0)delete v.builderCargo[w.id];
-  if(q.progress===tiles.length){q.state='complete';event(v,'construction',bp.title+' finished, '+tiles.length+' real blocks');note('BUILD COMPLETE '+bp.title);}
+  if(q.progress===tiles.length){q.state='verifying';q.verifyCursor=0;q.reason='All blocks placed; awaiting verification';dirtyProjects.add(v.id);note('BUILD PLACED — verification pending '+bp.title);}
   dirty=true;persist();
  }catch(e){q.state='blocked';q.reason=String(e).slice(0,55);note('BUILD ERROR '+e);}
 }
