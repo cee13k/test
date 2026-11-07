@@ -1,0 +1,4 @@
+{
+ "format_version":"1.10.0",
+ "minecraft:client_entity":{"description":{"identifier":"smartnpc:worker","materials":{"default":"entity_alphatest"},"textures":{"default":"textures/entity/genesis_worker"},"geometry":{"default":"geometry.humanoid"},"render_controllers":["controller.render.default"],"spawn_egg":{"base_color":"#286d59","overlay_color":"#e3c778"}}}
+}

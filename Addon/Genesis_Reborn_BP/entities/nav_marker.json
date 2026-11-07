@@ -1,0 +1,518 @@
+{
+  "format_version": "1.20.80",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "genesis:nav_marker",
+      "is_spawnable": false,
+      "is_summonable": false,
+      "is_experimental": false
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "genesis_nav_marker"
+        ]
+      },
+      "minecraft:health": {
+        "value": 2,
+        "max": 2
+      },
+      "minecraft:collision_box": {
+        "width": 0.01,
+        "height": 0.01
+      },
+      "minecraft:scale": {
+        "value": 0.01
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:persistent": {}
+    },
+    "component_groups": {
+      "genesis:slot_0": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_0"
+          ]
+        }
+      },
+      "genesis:slot_1": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_1"
+          ]
+        }
+      },
+      "genesis:slot_2": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_2"
+          ]
+        }
+      },
+      "genesis:slot_3": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_3"
+          ]
+        }
+      },
+      "genesis:slot_4": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_4"
+          ]
+        }
+      },
+      "genesis:slot_5": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_5"
+          ]
+        }
+      },
+      "genesis:slot_6": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_6"
+          ]
+        }
+      },
+      "genesis:slot_7": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_7"
+          ]
+        }
+      },
+      "genesis:slot_8": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_8"
+          ]
+        }
+      },
+      "genesis:slot_9": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_9"
+          ]
+        }
+      },
+      "genesis:slot_10": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_10"
+          ]
+        }
+      },
+      "genesis:slot_11": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_11"
+          ]
+        }
+      },
+      "genesis:slot_12": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_12"
+          ]
+        }
+      },
+      "genesis:slot_13": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_13"
+          ]
+        }
+      },
+      "genesis:slot_14": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_14"
+          ]
+        }
+      },
+      "genesis:slot_15": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_15"
+          ]
+        }
+      },
+      "genesis:slot_16": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_16"
+          ]
+        }
+      },
+      "genesis:slot_17": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_17"
+          ]
+        }
+      },
+      "genesis:slot_18": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_18"
+          ]
+        }
+      },
+      "genesis:slot_19": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_19"
+          ]
+        }
+      },
+      "genesis:slot_20": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_20"
+          ]
+        }
+      },
+      "genesis:slot_21": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_21"
+          ]
+        }
+      },
+      "genesis:slot_22": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_22"
+          ]
+        }
+      },
+      "genesis:slot_23": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_23"
+          ]
+        }
+      },
+      "genesis:slot_24": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_24"
+          ]
+        }
+      },
+      "genesis:slot_25": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_25"
+          ]
+        }
+      },
+      "genesis:slot_26": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_26"
+          ]
+        }
+      },
+      "genesis:slot_27": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_27"
+          ]
+        }
+      },
+      "genesis:slot_28": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_28"
+          ]
+        }
+      },
+      "genesis:slot_29": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_29"
+          ]
+        }
+      },
+      "genesis:slot_30": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_30"
+          ]
+        }
+      },
+      "genesis:slot_31": {
+        "minecraft:type_family": {
+          "family": [
+            "genesis_nav_marker",
+            "genesis_nav_slot_31"
+          ]
+        }
+      }
+    },
+    "events": {
+      "genesis:marker_slot_0": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_0"
+          ]
+        }
+      },
+      "genesis:marker_slot_1": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_1"
+          ]
+        }
+      },
+      "genesis:marker_slot_2": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_2"
+          ]
+        }
+      },
+      "genesis:marker_slot_3": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_3"
+          ]
+        }
+      },
+      "genesis:marker_slot_4": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_4"
+          ]
+        }
+      },
+      "genesis:marker_slot_5": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_5"
+          ]
+        }
+      },
+      "genesis:marker_slot_6": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_6"
+          ]
+        }
+      },
+      "genesis:marker_slot_7": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_7"
+          ]
+        }
+      },
+      "genesis:marker_slot_8": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_8"
+          ]
+        }
+      },
+      "genesis:marker_slot_9": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_9"
+          ]
+        }
+      },
+      "genesis:marker_slot_10": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_10"
+          ]
+        }
+      },
+      "genesis:marker_slot_11": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_11"
+          ]
+        }
+      },
+      "genesis:marker_slot_12": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_12"
+          ]
+        }
+      },
+      "genesis:marker_slot_13": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_13"
+          ]
+        }
+      },
+      "genesis:marker_slot_14": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_14"
+          ]
+        }
+      },
+      "genesis:marker_slot_15": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_15"
+          ]
+        }
+      },
+      "genesis:marker_slot_16": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_16"
+          ]
+        }
+      },
+      "genesis:marker_slot_17": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_17"
+          ]
+        }
+      },
+      "genesis:marker_slot_18": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_18"
+          ]
+        }
+      },
+      "genesis:marker_slot_19": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_19"
+          ]
+        }
+      },
+      "genesis:marker_slot_20": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_20"
+          ]
+        }
+      },
+      "genesis:marker_slot_21": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_21"
+          ]
+        }
+      },
+      "genesis:marker_slot_22": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_22"
+          ]
+        }
+      },
+      "genesis:marker_slot_23": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_23"
+          ]
+        }
+      },
+      "genesis:marker_slot_24": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_24"
+          ]
+        }
+      },
+      "genesis:marker_slot_25": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_25"
+          ]
+        }
+      },
+      "genesis:marker_slot_26": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_26"
+          ]
+        }
+      },
+      "genesis:marker_slot_27": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_27"
+          ]
+        }
+      },
+      "genesis:marker_slot_28": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_28"
+          ]
+        }
+      },
+      "genesis:marker_slot_29": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_29"
+          ]
+        }
+      },
+      "genesis:marker_slot_30": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_30"
+          ]
+        }
+      },
+      "genesis:marker_slot_31": {
+        "add": {
+          "component_groups": [
+            "genesis:slot_31"
+          ]
+        }
+      }
+    }
+  }
+}

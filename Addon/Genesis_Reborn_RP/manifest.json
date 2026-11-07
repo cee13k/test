@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Genesis Reborn | Civilization Visuals",
+    "description": "Genesis Reborn living civilization: council, villagers, jobs, economy, construction, defense, and settlements.",
+    "uuid": "fb46f355-265c-4db1-9c6a-cbb4ec91cefa",
+    "version": [
+      2,
+      4,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      80
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "6b4dc491-6319-4f26-af7b-4af495784a71",
+      "version": [
+        2,
+        4,
+        0
+      ]
+    }
+  ]
+}

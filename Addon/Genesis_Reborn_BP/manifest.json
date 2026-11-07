@@ -1,0 +1,58 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Genesis Reborn | Civilization Engine",
+    "description": "Genesis Reborn living civilization: council, villagers, jobs, economy, construction, defense, and settlements.",
+    "uuid": "b13ea4fc-d7c1-4fb9-a62b-596628822011",
+    "version": [
+      2,
+      4,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      80
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "4281fa68-31dd-44b5-bfb4-7185d78b9ab0",
+      "version": [
+        2,
+        4,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/main.js",
+      "uuid": "fe6705a2-6468-4c22-8a8a-579996784ef0",
+      "version": [
+        2,
+        4,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.9.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    },
+    {
+      "uuid": "fb46f355-265c-4db1-9c6a-cbb4ec91cefa",
+      "version": [
+        2,
+        4,
+        0
+      ]
+    }
+  ]
+}
