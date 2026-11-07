@@ -211,15 +211,15 @@ function ownerLockClear(p,v){ownerSessions.delete(v.id+':'+p.id);}
 async function ownerUnlock(p,v){
  if(p?.name!==v.founder)return false;if(ownerSession(p,v))return true;
  if(!v.ownerPasswordHash){
-  let r;try{r=await new ModalFormData().title('Founder Council Lock').textField('Create a private passphrase (8–64 characters)','Enter passphrase').textField('Confirm passphrase','Repeat passphrase').show(p);}catch(_){return false;}
-  if(!r||r.canceled)return false;const a=String(r.formValues?.[0]||''),b=String(r.formValues?.[1]||'');if(a.length<8||a.length>64||!/^[ -~]+$/.test(a)||a!==b){announce(p,'Passphrase must match and use 8–64 standard keyboard characters.');return false;}
+  let r;try{r=await new ModalFormData().title('Village Access Lock').textField('Create a passphrase (1–64 characters)','Enter passphrase').textField('Confirm passphrase','Repeat passphrase').show(p);}catch(_){return false;}
+  if(!r||r.canceled)return false;const a=String(r.formValues?.[0]??''),b=String(r.formValues?.[1]??'');if(a.length<1||a.length>64||!/^[ -~]+$/.test(a)||a!==b){announce(p,'Passphrase must match and use 1–64 standard keyboard characters.');return false;}
   const old={salt:v.ownerSalt,hash:v.ownerPasswordHash,version:v.ownerLockVersion};v.ownerSalt=ownerHash(v.id+':'+p.id+':'+system.currentTick+':'+Math.random()).slice(0,32);v.ownerPasswordHash=ownerSecretHash(v,a);v.ownerLockVersion=1;dirty=true;
-  if(!persist()){v.ownerSalt=old.salt;v.ownerPasswordHash=old.hash;v.ownerLockVersion=old.version;dirty=true;announce(p,'Founder lock could not be saved. Existing settings were preserved.');return false;}
-  ownerSessions.set(v.id+':'+p.id,system.currentTick+OWNER_UNLOCK_TICKS);announce(p,'Founder lock configured. Keep the passphrase safe; there is no automatic recovery.');return true;
+  if(!persist()){v.ownerSalt=old.salt;v.ownerPasswordHash=old.hash;v.ownerLockVersion=old.version;dirty=true;announce(p,'Passphrase could not be saved. Existing settings were preserved.');return false;}
+  ownerSessions.set(v.id+':'+p.id,system.currentTick+OWNER_UNLOCK_TICKS);announce(p,'Village access passphrase saved.');return true;
  }
  const key=v.id+':'+p.id,fail=ownerFailures.get(key)||{count:0,until:0};if(fail.until>system.currentTick){announce(p,'Unlock temporarily locked. Try again later.');return false;}
- let r;try{r=await new ModalFormData().title('Unlock Village — '+v.founder).textField('Village passphrase','Enter passphrase').show(p);}catch(_){return false;}
- if(!r||r.canceled)return false;const given=String(r.formValues?.[0]||'');
+ let r;try{r=await new ModalFormData().title('Unlock Village').textField('Village passphrase','Enter passphrase').show(p);}catch(_){return false;}
+ if(!r||r.canceled)return false;const given=String(r.formValues?.[0]??'');
  if(ownerSecretHash(v,given)!==v.ownerPasswordHash){fail.count++;if(fail.count>=5){fail.until=system.currentTick+1200;fail.count=0;}ownerFailures.set(key,fail);announce(p,'Incorrect village passphrase.');return false;}
  ownerFailures.delete(key);ownerSessions.set(key,system.currentTick+OWNER_UNLOCK_TICKS);return true;
 }
@@ -764,7 +764,11 @@ function sentinel(v,w,box){
 }
 function runRally(v,w){const r=v.rallies?.[w.id];if(!r)return false;if((system.currentTick||0)>r.until){delete v.rallies[w.id];dirty=true;return false;}if(moveToward(w,r,2.5)==='arrived'){delete v.rallies[w.id];dirty=true;status(w,'Rally complete');return false;}status(w,'Responding to founder rally');return true;}
 
-function workerCycle(v){const ws=workerList(v);v.dimensionObject=dimension(v);cleanRoutes(v,ws,system.currentTick||0);delete v.dimensionObject;if(!state.aiEnabled||!v.enabled){for(const w of ws)releaseRoute(v,w);return;}const box=chestFor(v),s=stats(v);governorStep(v,box,ws,s);for(const w of ws){if(isSmartNpcDialogueLocked(w))continue;const role=jobOf(v,w);try{if(v.tradeTrips?.[w.id]){tradeTrip(v,w);continue;}if(runRally(v,w))continue;if(v.cargo[w.id]&&box){hauling(v,w,box);continue;}if(role==='Hauler'&&box)hauling(v,w,box);else if(role==='Crafter'&&box)crafting(v,w,box);else if(role==='Builder'&&box)construction(v,w,box,s.presentAdults);else if(role==='Farmer'&&box)farmWork(v,w,box);else if(role==='Ranger'&&box)forestry(v,w,box);else if(role==='Sentinel')sentinel(v,w,box);else if(role==='Medic'&&box)medic(v,w,box);else if(role==='Provisioner'&&box)provisionResidents(v,w,box,s);else if(role==='Miner'&&box)mining(v,w,box);else if(role==='Steward'&&box)steward(v,w,box);else if(role==='Trader'&&box)startTrade(v,w,box);}catch(e){note('WORKER '+role+' '+e);}}}
+function workerCycle(v){
+ // Legacy SmartNPC workers are intentionally no longer assigned tasks by the vanilla-villager rebuild.
+ // Existing entities are left untouched; no custom workers are spawned or converted from villagers.
+ const ws=workerList(v);for(const w of ws)releaseRoute(v,w);
+}
 function requiredFor(v){const q=nextBuild(v);if(!q)return {};return remainingMaterials(planBlueprint(q)?.blocks()||[],q.progress||0);}
 function nextMilestone(v,box,s){
  if(!box)return 'Register a chest as the physical warehouse';
@@ -822,17 +826,23 @@ async function pageDiplomacy(p,v,canEdit){
   else event(v,'diplomacy','Declined alliance from '+from.founder);
   persist();}
 }
-async function showHome(p,v){if(p.name===v.founder)await ownerUnlock(p,v);for(let n=0;n<40;n++){const s=stats(v),box=chestFor(v),ownerAccess=owner(p,v),next=nextMilestone(v,box,s);const buttons=['Population & History','Workers & Jobs','Warehouse & Inventory','Construction Plans','Master Crafter','Fields & Agriculture','Defense & Policies','Village Statistics','Civilization Council','Supply Orders','Quarry & Mining','Economy & Contracts','Diplomacy & Treaties','Refresh Census'];if(ownerAccess)buttons.push('Lock council now');buttons.push('Close');const closeIndex=buttons.length-1,lockIndex=ownerAccess?buttons.length-2:-1;
- const idx=await menu(p,'§2GENESIS REBORN §7• Living Civilization',`§lFounder§r ${v.founder}  §7| Day ${day()}§r
-§a${s.stage}§r
-Residents: ${s.adults} adults (${s.presentAdults} present), ${s.babies} children, ${s.unclassified} unclassified
-Present: ${s.present} | Wandering: ${s.wandering} | Unloaded: ${s.unloaded} | Missing: ${s.missing} | Dead: ${s.dead}
-Specialists: ${s.workers} | Jobs: ${!state.aiEnabled?'GLOBAL PAUSED':v.enabled?'ACTIVE':'VILLAGE PAUSED'}
-Warehouse: ${box?'ONLINE':'NOT REGISTERED'}
-Founder controls: ${ownerAccess?'UNLOCKED':'LOCKED / READ ONLY'}
-
-§eNext milestone: ${next}§r`,buttons);if(idx===-1||idx===closeIndex)return;if(idx===lockIndex){ownerLockClear(p,v);announce(p,'Founder council locked.');return;}
- if(idx===0)await pagePopulation(p,v);if(idx===1)await pageWorkers(p,v,ownerAccess);if(idx===2)await pageWarehouse(p,v,ownerAccess);if(idx===3)await pageConstruction(p,v,ownerAccess);if(idx===4)await pageCrafting(p,v,ownerAccess);if(idx===5)await pageFarms(p,v,ownerAccess);if(idx===6)await pagePolicies(p,v,ownerAccess);if(idx===7)await pageStats(p,v);if(idx===8)await pageCouncil(p,v,ownerAccess);if(idx===9)await pageSupplyBoard(p,v);if(idx===10)await pageQuarry(p,v,ownerAccess);if(idx===11)await pageTrade(p,v,ownerAccess);if(idx===12)await pageDiplomacy(p,v,ownerAccess);if(idx===13){census(v);persist();announce(p,'Updated local census. Missing is not the same as dead.');}}}
+async function showHome(p,v){
+ if(p.name===v.founder)await ownerUnlock(p,v);
+ for(let n=0;n<40;n++){
+  const s=stats(v),canEdit=owner(p,v),villagers=residents(v),custom=workerList(v);
+  const buttons=['Villager Progress',canEdit?(v.enabled?'Pause Workforce':'Resume Workforce'):'Workforce Status','Refresh Villager Census','Close'];
+  const idx=await menu(p,'§2GENESIS REBORN §7• VILLAGE',`§lVillagers§r: ${villagers.length}
+Adults: ${s.presentAdults} | Children: ${s.babies}
+Workforce: ${v.enabled?'Enabled':'Paused'}
+§7Vanilla villagers keep their normal Minecraft AI, appearance, professions, and breeding.
+§7Custom legacy workers detected: ${custom.length}
+§eThe bell is a progress display and control point, not a civilization or economy system.§r`,buttons);
+  if(idx<0||idx===3)return;
+  if(idx===0){await pageWorkers(p,v,canEdit);continue;}
+  if(idx===1){if(!canEdit){announce(p,'Founder access is required to change workforce controls.');continue;}v.enabled=!v.enabled;dirty=true;persist();announce(p,v.enabled?'Workforce enabled.':'Workforce paused.');continue;}
+  if(idx===2){census(v);persist();announce(p,'Villager census refreshed.');}
+ }
+}
 async function pagePopulation(p,v,offset=0){
  const label=life=>life==='dead'?'§cDEAD':life==='missing'?'§eMISSING':life==='unloaded'?'§7UNLOADED':life==='wandering'?'§bWANDERING':'§aPRESENT';
  const entries=[...Object.values(v.residents).filter(m=>m.life!=='converted').map(m=>({name:m.name,life:m.life,detail:'Vanilla villager • '+m.age})),...Object.values(v.conversions||{}).map(c=>({name:c.name,life:c.life,detail:'SmartNPC specialist'}))].sort((a,b)=>a.life.localeCompare(b.life)||a.name.localeCompare(b.name));
@@ -845,35 +855,21 @@ async function pageWarehouse(p,v,canEdit){const box=chestFor(v),contents=countIt
  if(x===0){let b;try{b=p.getBlockFromViewDirection({maxDistance:8})?.block;}catch(_){}if(!b||!['minecraft:chest','minecraft:trapped_chest'].includes(b.typeId)||hd(b.location,v.bell)>24||b.dimension.id!==v.dimension||!b.getComponent('minecraft:inventory')?.container){announce(p,'Look at a single chest within 24 blocks of the bell.');return;}v.chest={x:b.location.x,y:b.location.y,z:b.location.z};event(v,'warehouse','Chest registered '+xyz(v.chest));persist();}
  if(x===1){if(await yes(p,'Unregister Warehouse','Stored items remain in the chest. In-flight Haulers will be paused.')){v.chest=null;dirty=true;persist();}}
  if(x===2){v.haulCrops=!v.haulCrops;dirty=true;persist();}}
-async function pageWorkers(p,v,canEdit){const ws=workerList(v),vanilla=villagerWorkforceProbe(v),lines=ws.map((w,i)=>`${i+1}. ${w.nameTag||'SmartNPC Worker'} | ${jobOf(v,w)}\n    §7${workerStatus(v,w)}§r`);const labels=['Legacy fallback: convert nitwit','Assign profession','Retire legacy worker','Back'];const x=await menu(p,'Specialist Workforce',`${lines.join('\n')||'No loaded workers'}\n\nVanilla workforce pilot: ${vanilla.total} villagers nearby (${vanilla.adults} adults, ${vanilla.children} children) | Entity types: ${Object.entries(vanilla.entityTypes).map(([id,n])=>id.replace('minecraft:','')+' ×'+n).join(', ')||'Unavailable'} | Inventory component: ${vanilla.inventoryApi}/${vanilla.total} | Readable: ${vanilla.inventoryReadable} | Slots: ${vanilla.inventorySlots} | Occupied: ${vanilla.occupiedSlots} | Siphon flag: ${vanilla.siphonAllowed}/${vanilla.siphonProperty} | addItem API: ${vanilla.addItemApi}/${vanilla.total}\nNaturally carried items: ${Object.entries(vanilla.heldItems).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id,n])=>id.replace('minecraft:','')+' ×'+n).join(', ')||'None detected'}\nPotential surplus (estimate): ${Object.entries(vanilla.surplusEstimate).map(([id,n])=>id.replace('minecraft:','')+' ×'+n).join(', ')||'None detected'}\nVillager variants (raw IDs): ${Object.entries(vanilla.variants).sort((a,b)=>a[0].localeCompare(b[0])).map(([id,n])=>id+' ×'+n).join(', ')||'Unavailable'}\nComponents: ${Object.entries(vanilla.components).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,n])=>id+' ×'+n).join(', ')||'Unavailable'}\n§7Read-only audit only. Villager variants are shown as raw IDs only; no profession is inferred from an unverified mapping. Siphon flag reports the inventory component's canBeSiphonedFrom property when exposed; it does not prove item transfer is safe or supported. Surplus estimate keeps conservative per-villager food reserves (bread 6; carrots, potatoes, beetroot 24; wheat 18). Seeds and all unrecognized items are excluded. No items are taken, inserted, or changed.\n\nLoaded specialists: ${ws.length}/${v.workerIds.length} | Converted residents: ${Object.keys(v.conversions||{}).length} | Unloaded/missing conversions: ${Object.values(v.conversions||{}).filter(c=>c.life==='unloaded'||c.life==='missing').length} | Wandering: ${Object.values(v.conversions||{}).filter(c=>c.life==='wandering').length}\n§7Unloaded specialists remain in the resident census and return to this list when loaded. Only one active Master Crafter is permitted. Workers are custom SmartNPC entities recruited only from verified adult nitwits; normal employed villagers remain vanilla.`,canEdit?labels:['Back']);if(!canEdit)return;
- if(x===0){
-  if(ws.length>=MAX_WORKERS){announce(p,'Maximum 12 specialists.');return;}
-  if(!atSite(v,p)){announce(p,'Stand within your settlement to enroll a nitwit.');return;}
-  let candidates=[];try{candidates=p.dimension.getEntities({families:['nitwit'],location:v.bell,maxDistance:32}).filter(confirmedAdultNitwit);}catch(e){note('NITWIT FAMILY QUERY UNSUPPORTED '+e);}
-  if(!candidates.length){announce(p,'No confirmed adult nitwits within 32 blocks. No entity changed.');return;}
-  const index=await menu(p,'Optional Legacy Specialist Conversion','Fallback only: regular villagers remain the intended workforce. Choose a confirmed adult non-trading nitwit only if you deliberately want a custom Genesis specialist; conversion permanently removes normal villager breeding behavior.',candidates.map(e=>(e.nameTag||'Nitwit')+' at '+xyz(e.location)).concat('Back'));
-  if(index<0||index>=candidates.length)return;
-  const old=candidates[index];
-  // Any villager inventory is sacred. Do not convert villagers holding items.
-  if(!emptyVillagerInventory(candidates[index])){announce(p,'Nitwit inventory is occupied or cannot be verified. Enrollment refused.');return;}
-  if(!await yes(p,'Confirm Optional Conversion','This is a permanent legacy fallback. The adult nitwit will be replaced by one Genesis worker and lose normal villager breeding. No regular villager workforce is changed. Proceed?'))return;
-  const originalId=old.id,originalName=old.nameTag||'Nitwit',position={...old.location};
-  let newcomer=null;
-  try{
-   newcomer=p.dimension.spawnEntity('smartnpc:worker',position);
-   newcomer.nameTag=originalName;
-   // Ensure the original still exists before committing the conversion.
-   if(!confirmedAdultNitwit(old))throw Error('Original entity is no longer a confirmed adult nitwit (variant 14)');
-   if(!emptyVillagerInventory(old))throw Error('Original nitwit inventory changed or cannot be verified');
-   old.remove();
-   v.conversions??={};v.conversions[newcomer.id]={from:originalId,name:originalName,convertedDay:day(),seen:day(),life:'present',last:{x:Math.floor(position.x),y:Math.floor(position.y),z:Math.floor(position.z)},lastDimension:v.dimension};dirtyRosters.add(v.id);
-   if(v.residents[originalId])v.residents[originalId].life='converted';
-   v.workerIds.push(newcomer.id);setJob(v,newcomer,'Hauler');migrateSmartNpcWorkerMemory(originalId,newcomer.id,originalName,'Hauler');
-   event(v,'enrollment','Nitwit '+originalName+' joined specialist workforce (permanent conversion)');persist();
-  }catch(e){if(newcomer)try{newcomer.remove();}catch(_){}note('NITWIT CONVERSION FAILED '+e);announce(p,'Nitwit enrollment failed; check logs and census.');}
- }
- if(x===1){if(!ws.length)return;const pick=await menu(p,'Choose Specialist','Assign one job to a SmartNPC worker.',ws.map(w=>w.nameTag+' ('+jobOf(v,w)+')').concat('Back'));if(pick<0||pick>=ws.length)return;const jobIndex=await menu(p,'Assign Profession','Haulers collect wood and optional crops. Builders place real blocks. Crafter processes recipes. Farmer manages an opted-in plot. Ranger tends an opted-in oak woodlot; Sentinel protects residents; Miner removes approved quarry stone; Steward tracks physical requests.',JOBS.concat('Back'));if(jobIndex<0||jobIndex>=JOBS.length)return;const j=JOBS[jobIndex];if(j==='Crafter'&&ws.some(w=>w.id!==ws[pick].id&&jobOf(v,w)==='Crafter')){announce(p,'Only ONE Master Crafter is permitted.');return;}if(!setJob(v,ws[pick],j)){announce(p,'Builder materials could not be safely recovered; job unchanged.');return;}event(v,'profession',ws[pick].nameTag+' assigned '+j);persist();}
- if(x===2){if(!ws.length)return;const i=await menu(p,'Retire Worker','Cargo must be delivered first. This only affects custom Genesis workers.',ws.map(w=>w.nameTag).concat('Back'));if(i<0||i>=ws.length)return;const w=ws[i];if(v.tradeTrips?.[w.id]){announce(p,'Trader has a live delivery and cannot retire.');return;}if(v.conversions?.[w.id]){announce(p,'Converted nitwits cannot be retired to vanilla without losing their original identity.');return;}if(v.cargo[w.id]||v.medicalCargo?.[w.id]){announce(p,'Worker has cargo. Let it deliver or recover before retiring.');return;}if(!await yes(p,'Retire Worker','Remove this custom specialist entity? Any builder materials will be returned to the warehouse or dropped safely. Vanilla residents are unaffected.'))return;if(v.builderCargo?.[w.id]&&!returnBuilderLoad(v,w,chestFor(v),v.builderCargo[w.id])){announce(p,'Builder materials could not be safely recovered; worker was not retired.');return;}try{releaseRoute(v,w);delete v.navSlots?.[w.id];delete v.woodCutting?.[w.id];w.remove();v.workerIds=v.workerIds.filter(id=>id!==w.id);delete v.jobs[w.id];event(v,'retire','Custom specialist retired');persist();}catch(e){note('RETIRE ERROR '+e);}}}
+async function pageWorkers(p,v,canEdit){
+ const villagers=residents(v),vanilla=villagerWorkforceProbe(v);
+ const lines=villagers.slice(0,32).map((e,i)=>{
+  let age='unknown';try{age=e.getComponent('minecraft:is_baby')?'baby':'adult';}catch(_){}
+  let variant='?';try{const n=e.getComponent('minecraft:variant')?.value;if(Number.isInteger(n))variant=String(n);}catch(_){}
+  return `${i+1}. ${e.nameTag||'Villager'} — ${age} — native AI — variant ${variant}`;
+ });
+ await menu(p,'Villager Progress',`Nearby vanilla villagers: ${vanilla.total}
+Adults: ${vanilla.adults} | Children: ${vanilla.children}
+Entity types: ${Object.entries(vanilla.entityTypes).map(([id,n])=>id.replace('minecraft:','')+' ×'+n).join(', ')||'None detected'}
+
+${lines.join('\n')||'No villagers currently detected.'}
+
+§7This page is a read-only villager roster for now. No villagers are converted, replaced, or spawned. Profession/job tracking and autonomous work are being rebuilt for vanilla villagers.`,['Back']);
+}
 async function pageCrafting(p,v,canEdit){const crafter=workerList(v).find(w=>jobOf(v,w)==='Crafter');const box=chestFor(v);const x=await menu(p,'Master Crafter',`Master Crafter: ${crafter?crafter.nameTag:'NOT ASSIGNED'}\nWarehouse: ${box?'Online':'Missing'}\nCrafting table: ${hasCraftingTable(v)?'Nearby':'MISSING beside warehouse'}\nQueue: ${v.crafts.map(i=>RECIPES[i]?.title||i).join(', ')||'Empty'}\n\n§7Recipes use and produce real chest items.`,canEdit?[...Object.values(RECIPES).map(x=>'Queue '+x.title),'Cancel last recipe','Back']:['Back']);if(!canEdit)return;const keys=Object.keys(RECIPES);if(x>=0&&x<keys.length){if(v.crafts.length>=16){announce(p,'Craft queue full.');return;}v.crafts.push(keys[x]);dirty=true;persist();announce(p,'Recipe queued. Assign one Master Crafter to process it.');}if(x===keys.length&&v.crafts.length){v.crafts.pop();dirty=true;persist();}}
 async function pageConstruction(p,v,canEdit){const s=stats(v),tasks=v.queue.map(q=>`${q.title||planBlueprint(q)?.title||q.kind}: ${q.progress}/${planBlueprint(q)?.blocks().length||q.tileCount||'?'} (${q.state}${q.reason?', '+q.reason:''})`).join('\n');const need=requiredFor(v);const shortage=nextBuild(v)?shortageForWarehouse(planBlueprint(nextBuild(v))?.blocks()||[],nextBuild(v)?.progress||0,chestFor(v)):{};const x=await menu(p,'Village Construction',`${s.presentAdults}/8 present adults ready for expansion (${s.adults} total adults)\n§7Build only on empty plots you explicitly select. Builders consume real planks. No landscape clearing.\n\n${tasks||'No projects yet.'}\n\n§eRemaining materials:\n${labelItems(need)}§r\n\n§eUnstocked materials (Construct inventory accounting):\n${labelItems(shortage)}§r`,canEdit?['Plan Carpenter Workshop (5×5)','Plan Storehouse (7×5)','Plan Village House (5×5)','Plan Watchtower (3×3)','Plan Stone Road (1×9)','Plan Quarry Workshop (5×5)','Plan Defensive Palisade (9×9)','Build from saved Construct structure','Cancel most recent unfinished plan','Back']:['Back']);if(!canEdit)return;
  if(x>=0&&x<=6){if(s.presentAdults<8){announce(p,'Civilization construction requires 8 present adults. Let vanilla residents grow and breed naturally.');return;}if(v.queue.filter(q=>q.state!=='complete'&&q.state!=='cancelled').length>=2){announce(p,'Two unfinished projects maximum.');return;}const kind=['workshop','storehouse','house','watchtower','stone_road','quarryhut','palisade'][x],bp=blueprints[kind];let hit;try{hit=p.getBlockFromViewDirection({maxDistance:8})?.block;}catch(_){}if(!hit||!atSite(v,p)){announce(p,'Look at the ground near your village.');return;}const origin={x:hit.location.x,y:hit.location.y+1,z:hit.location.z};if(hd(origin,v.bell)>RADIUS-12){announce(p,'Build site is too far from town center.');return;}const d=dimension(v);for(const part of bp.blocks()){const b=getBlock(d,{x:origin.x+part.x,y:origin.y+part.y,z:origin.z+part.z});if(!b?.isAir){announce(p,'Build plot obstructed at '+(b?xyz(b.location):'unloaded location')+'. Nothing modified.');return;}}
@@ -938,7 +934,7 @@ async function pageCouncil(p,v,canEdit){
  persist();
 }
 async function pageStats(p,v){const s=stats(v),m=v.metrics;const hist=v.history.slice(0,16).map(x=>`Day ${x.day} • ${x.type}: ${x.message}`).join('\n');await menu(p,'Chronicle & Diagnostics',`§lCivilization: ${s.stage}§r\nLiving residents: ${s.population}; Present: ${s.present}; Wandering: ${s.wandering}; Unloaded: ${s.unloaded}; Missing: ${s.missing}; Confirmed dead: ${s.dead}\nAdults: ${s.adults} total / ${s.presentAdults} present; Children: ${s.babies}\nHaul pickups: ${m.picked}; Delivered: ${m.delivered}\nBlocks built: ${m.built}; Recipes completed: ${m.crafted}; Crops: ${m.harvested}\nLogs cut: ${m.woodcut||0}; Saplings planted: ${m.planted||0}\nUnfinished cargo: ${Object.keys(v.cargo).length}\nLoaded census coverage: ${scanActive(v)?'Local scan':'Not confirmed'}\n\n§lHistory§r\n${hist||'No records yet'}`,['Back']);}
-async function onBell(p,dim,pos){if(openMenus.has(p.id))return;openMenus.add(p.id);try{let v=villageAt(dim,pos);if(!v){const legacy=Object.values(state.villages).find(x=>x.legacyNeedsBell&&x.dimension===dim.id&&hd(x.bell,pos)<=RADIUS);if(legacy){v=legacy;v.bell={...pos};v.legacyNeedsBell=false;event(v,'migration','Linked imported SmartNPC village to its existing Town Center bell');persist();}}if(!v){if(Object.keys(state.villages).length>=MAX_VILLAGES){announce(p,'Maximum eight Genesis settlements per world.');return;}if(Object.values(state.villages).some(x=>x.dimension===dim.id&&hd(x.bell,pos)<RADIUS*2)){announce(p,'Another Genesis Town Center is too near.');return;}if(!await yes(p,'Found Village','Register this bell as a Genesis Reborn Town Center? Vanilla residents will remain unchanged.'))return;v=newVillageState(dim.id+'|'+xyz(pos),dim.id,pos,p.name);state.villages[v.id]=v;event(v,'founding','Founded by '+p.name);census(v);persist();}await showHome(p,v);}catch(e){note('TOWN CENTER '+e);announce(p,'Town Center error. Check content log.');}finally{openMenus.delete(p.id);persist();}}
+async function onBell(p,dim,pos){if(openMenus.has(p.id))return;openMenus.add(p.id);try{let v=villageAt(dim,pos);if(!v){const legacy=Object.values(state.villages).find(x=>x.legacyNeedsBell&&x.dimension===dim.id&&hd(x.bell,pos)<=RADIUS);if(legacy){v=legacy;v.bell={...pos};v.legacyNeedsBell=false;event(v,'migration','Linked the existing village control bell');persist();}}if(!v){if(Object.keys(state.villages).length>=MAX_VILLAGES){announce(p,'Maximum eight Genesis settlements per world.');return;}if(Object.values(state.villages).some(x=>x.dimension===dim.id&&hd(x.bell,pos)<RADIUS*2)){announce(p,'Another Genesis Town Center is too near.');return;}if(!await yes(p,'Found Village','Register this bell as a Genesis Reborn village control point? Vanilla residents will remain unchanged.'))return;v=newVillageState(dim.id+'|'+xyz(pos),dim.id,pos,p.name);state.villages[v.id]=v;event(v,'founding','Founded by '+p.name);census(v);persist();}await showHome(p,v);}catch(e){note('TOWN CENTER '+e);announce(p,'Town Center error. Check content log.');}finally{openMenus.delete(p.id);persist();}}
 if(safeVillageConversions().length!==1)note('BEE CONVERSION SAFETY: bread conversion did not match expected source table');
 try{world.afterEvents.playerStartBreakingBlock.subscribe(ev=>{try{if(ev.block.typeId!=='minecraft:bell'||ev.heldItemStack)return;const p=ev.player,d=ev.block.dimension,pos={...ev.block.location};system.run(()=>void onBell(p,d,pos));}catch(e){note('BELL EVENT '+e);}});}catch(e){note('BELL SUBSCRIBE '+e);}
 try{world.beforeEvents.playerBreakBlock.subscribe(ev=>{if(ev.block.typeId==='minecraft:bell'&&!ev.itemStack)ev.cancel=true;});}catch(_){}
